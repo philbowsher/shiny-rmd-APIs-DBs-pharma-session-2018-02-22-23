@@ -32,12 +32,12 @@ starbucks
 # Without pipes
 # starbucks_MO <- filter(starbucks, Country== 'US', State=='VA')
 
-starbucks_MD <- starbucks %>%
-  filter(Country== 'US', State=='MD')%>% 
+starbucks_NY <- starbucks %>%
+  filter(Country== 'US', State=='NY')%>% 
   select(Brand, `Store Number`, `Ownership Type`, City,	State,	Zip, Country, Coordinates,	Latitude,	Longitude, Name)
 
 
-leaflet() %>% addTiles() %>% setView(-76.98999, 39.032965, zoom = 12) %>% 
+leaflet() %>% addTiles() %>% setView(-73.823432, 41.078613, zoom = 12) %>% 
 
-addMarkers(data = starbucks_MD, lat = ~ Latitude, lng = ~ Longitude, popup = starbucks_MD$Name) %>%
-  addPopups(-76.980140, 39.032965, 'the <b> spot</b>')
+addMarkers(data = starbucks_NY, lat = ~ Latitude, lng = ~ Longitude, popup = starbucks_NY$Name) %>%
+  addPopups(-73.823432, 41.078613, 'the <b> spot</b>')
