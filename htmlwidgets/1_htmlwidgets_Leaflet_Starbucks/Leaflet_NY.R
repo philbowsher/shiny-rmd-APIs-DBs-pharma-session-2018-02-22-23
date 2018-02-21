@@ -37,7 +37,7 @@ starbucks_MD <- starbucks %>%
   select(Brand, `Store Number`, `Ownership Type`, City,	State,	Zip, Country, Coordinates,	Latitude,	Longitude, Name)
 
 
-leaflet() %>% addTiles() %>% setView(-76.980140, 39.032965, zoom = 12) %>% 
+leaflet() %>% addTiles() %>% setView(-76.98999, 39.032965, zoom = 12) %>% 
 
 addMarkers(data = starbucks_MD, lat = ~ Latitude, lng = ~ Longitude, popup = starbucks_MD$Name) %>%
   addPopups(-76.980140, 39.032965, 'the <b> spot</b>')
