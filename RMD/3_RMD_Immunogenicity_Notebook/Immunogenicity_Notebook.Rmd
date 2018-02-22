@@ -1,8 +1,8 @@
 ---
 title: "R Notebook - Immunogenicity 3 Tiered Approach for Assessing ADA Positive Samples"
 output:
-  html_document: default
   html_notebook: default
+  html_document: default
 ---
 
 packages
@@ -11,13 +11,14 @@ library(tidyverse)
 library(magrittr)
 library(stringr)
 library(plotly)
+library(crosstalk)
 ```
 
 Tier 1 - Screening Data
 ```{r, message=FALSE, warning=FALSE}
 
 # readr
-Screening <- read_csv("~/PharmaSUG-R-Workshop/7_RMD_Immunogenicity_Notebook/Sample_ADA_Data_05062017_Screening.csv") %>% mutate(Screening_Cutpoint = 200) %>%
+Screening <- read_csv("Sample_ADA_Data_05062017_Screening.csv") %>% mutate(Screening_Cutpoint = 200) %>%
   mutate(Screening_Result_Drug = ifelse(Signal_Response_No_Drug > Screening_Cutpoint, "Positive", "Negative")) %>% mutate(Signal_Response_No_Drug_log10 = log10(Signal_Response_No_Drug)) %>% filter(Screening_Result_Drug=="Positive")
 
 Screening
@@ -27,7 +28,7 @@ Tier 2 - Confirmatory Data
 ```{r, message=FALSE, warning=FALSE}
 
 # readr
-Confirmatory <- read_csv("~/PharmaSUG-R-Workshop/7_RMD_Immunogenicity_Notebook/Sample_ADA_Data_05062017_Confirmatory.csv")
+Confirmatory <- read_csv("Sample_ADA_Data_05062017_Confirmatory.csv")
 
 Screening_Confirmatory <- Screening %>%
   left_join(Confirmatory, by = 'Sample_Number') %>%
@@ -42,7 +43,7 @@ Screening_Confirmatory
 Tier 3 - Add Titer to Confirmatory Data
 ```{r, message=FALSE, warning=FALSE}
 
-Titer <- read_csv("~/PharmaSUG-R-Workshop/7_RMD_Immunogenicity_Notebook/Sample_ADA_Data_05062017_Titer.csv")
+Titer <- read_csv("Sample_ADA_Data_05062017_Titer.csv")
 
 Screening_Confirmatory_Titer <- Screening_Confirmatory %>%
   left_join(Titer, by = 'Sample_Number') 
@@ -64,7 +65,6 @@ s <- subplot(
 
 highlight(s, "plotly_selected")
 ```
-
 
 Plot of Postive Signal_Response_No_Drug and Percent_Signal_Inhibition_Drug
 ```{r}
@@ -101,3 +101,14 @@ p = ggplotly(p)
 p
 
 ```
+
+
+```{r}
+sessionInfo()
+```
+
+```{r}
+devtools::session_info() 
+```
+```
+
