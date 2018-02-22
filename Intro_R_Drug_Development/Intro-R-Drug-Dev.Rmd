@@ -219,7 +219,7 @@ a {
 - The pet cat -no
 - Timmy and Tommy Tibble –no but my kids do…
 - An awesome data set format for R: yes
-- http://colorado.rstudio.com/rsc/content/678/tidyverse_notebook.nb.html
+- [Tibble info](http://colorado.rstudio.com/rsc/content/678/tidyverse_notebook.nb.html)
 
  <div class="img-col">
    ![](tibbles.jpg)
@@ -235,16 +235,16 @@ a {
 - http://r4ds.had.co.nz/tibbles.html
 
  <div class="img-col">
-   ![](tibbles.jpg)
+   ![](tribbles.jpg)
    
-   <div>CC image courtesy <br /> of <a href="http://pbskids.org/arthur/friends/tibbles/photos.html">pbskids</a> arthur</div>
+   <div>CC image courtesy CBS Home Entertainment<br /> of <a href="http://www.treknews.net/2017/07/31/star-trek-discovery-tribbles-pg13/">The Trouble </a> With Tribbles</div>
  </div>
 </div>
 
 ## Tibble Example
 
 ```{r}
-# library(tibble)
+library(tibble)
 #library("tidyverse")
 storms <-tribble(
 ~storm, ~wind, ~pressure, ~date,
@@ -1221,10 +1221,8 @@ for control and elimination of London Declaration NTDs](https://erasmusmcmgz.shi
  
 ## Come see us at the RStudio Conference...
 
-- https://www.rstudio.com/conference/
-- Austin January 15th through the 18th 2019
+- [Austin January 15th through the 18th 2019](https://www.rstudio.com/conference/)
 - https://github.com/rstudio/rstudio-conf/tree/master/2018
-- https://paulvanderlaken.com/2018/02/08/rstudioconf-2018-summary/
 
 <div class="columns-4">![jerry](jerry.png)</a>
 

@@ -2,37 +2,9 @@
 
 Live Presentation is here:
 
-https://beta.rstudioconnect.com/content/3147/
+https://beta.rstudioconnect.com/content/3337/
 
 Other apps and reports are here:
-
-Starbucks:
-
-https://beta.rstudioconnect.com/content/2760/viewer-rpubs-774073c8e465.html
-
-Basic Shiny:
-
-https://beta.rstudioconnect.com/content/2761/
-
-Interactive Plot:
-
-https://beta.rstudioconnect.com/content/2763/
-
-Flex ToothGrowth:
-
-https://beta.rstudioconnect.com/content/2765/Flex_No_Shiny_ToothGrowth.html
-
-Shiny Plots ToothGrowth:
-
-https://beta.rstudioconnect.com/content/2766/
-
-Flex Shiny:
-
-https://beta.rstudioconnect.com/content/2767/
-
-Crosstalk:
-
-https://beta.rstudioconnect.com/content/2768/crosstalk_toothgrowth.html
 
 IMMUNOGENICITY App:
 
@@ -62,6 +34,34 @@ https://beta.rstudioconnect.com/content/2975/outcomes?drug=FUROSEMIDE
 https://beta.rstudioconnect.com/content/2975/__swagger__/
 
 Click GET, Try it Out, then enter PREDNISONE and then hit Execute. Details show top 10 adverse events in the Response body blow.
+
+Starbucks:
+
+https://beta.rstudioconnect.com/content/2760/viewer-rpubs-774073c8e465.html
+
+Basic Shiny:
+
+https://beta.rstudioconnect.com/content/2761/
+
+Interactive Plot:
+
+https://beta.rstudioconnect.com/content/2763/
+
+Flex ToothGrowth:
+
+https://beta.rstudioconnect.com/content/2765/Flex_No_Shiny_ToothGrowth.html
+
+Shiny Plots ToothGrowth:
+
+https://beta.rstudioconnect.com/content/2766/
+
+Flex Shiny:
+
+https://beta.rstudioconnect.com/content/2767/
+
+Crosstalk:
+
+https://beta.rstudioconnect.com/content/2768/crosstalk_toothgrowth.html
 
 Presentations and code from workshop.
 
