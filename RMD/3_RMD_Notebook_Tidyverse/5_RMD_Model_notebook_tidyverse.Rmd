@@ -76,7 +76,7 @@ flights %>%
   geom_bar(stat = "identity") +                              # bar plots in ggplot2
   theme_bw() +                                               # customize the theme
   labs(                                                      # clean up the labels
-    title = "Case of the Mondays and Tues?",
+    title = "Case of the Mondays?",
     y = "Avg. Delay (mins)",
     x = ""
   )
@@ -96,7 +96,7 @@ library(purrr) # purrr helps apply functions to data frames (like apply)
 library(broom) # broom helps create tidy model diagnostics
 
 
-airlines <- read_csv("data/notebook-tidyverse-airlines.csv") # readr to read in all kinds of data
+airlines <- read_csv("notebook-tidyverse-airlines.csv") # readr to read in all kinds of data
 flights %>% 
   left_join(airlines, by = c('carrier' = 'carrier')) %>% # dplyr can join tables
   mutate(name = str_replace(name, "\\w*\\.", ""), # stringr to remove abbreviations

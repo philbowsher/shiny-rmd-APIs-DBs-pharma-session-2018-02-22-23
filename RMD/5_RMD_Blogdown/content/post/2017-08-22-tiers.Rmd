@@ -34,7 +34,7 @@ library(DT)
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 
 # readr
-Screening <- read_csv("~/blogdowntest/data/Sample_ADA_Data_05062017_Screening.csv") %>% mutate(Screening_Cutpoint = params$screening_cut_point) %>%
+Screening <- read_csv("~/shiny-rmd-APIs-DBs-pharma-session-2018-02-22-23/RMD/5_RMD_Blogdown/data/Sample_ADA_Data_05062017_Screening.csv") %>% mutate(Screening_Cutpoint = params$screening_cut_point) %>%
   mutate(Screening_Result_Drug = ifelse(Signal_Response_No_Drug > Screening_Cutpoint, "Positive", "Negative")) %>% mutate(Signal_Response_No_Drug_log10 = log10(Signal_Response_No_Drug)) %>% filter(Screening_Result_Drug=="Positive")
 
 datatable(Screening, options = list(pageLength = 10))
@@ -44,7 +44,7 @@ datatable(Screening, options = list(pageLength = 10))
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 
 # readr
-Confirmatory <- read_csv("~/blogdowntest/data/Sample_ADA_Data_05062017_Confirmatory.csv")
+Confirmatory <- read_csv("~/shiny-rmd-APIs-DBs-pharma-session-2018-02-22-23/RMD/5_RMD_Blogdown/data/Sample_ADA_Data_05062017_Confirmatory.csv")
 
 Screening_Confirmatory <- Screening %>%
   left_join(Confirmatory, by = 'Sample_Number') %>%
@@ -59,7 +59,7 @@ datatable(Screening_Confirmatory, options = list(pageLength = 10))
 # Add Titer to Confirmatory Data
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 
-Titer <- read_csv("~/blogdowntest/data/Sample_ADA_Data_05062017_Titer.csv")
+Titer <- read_csv("~/shiny-rmd-APIs-DBs-pharma-session-2018-02-22-23/RMD/5_RMD_Blogdown/data/Sample_ADA_Data_05062017_Titer.csv")
 
 Screening_Confirmatory_Titer <- Screening_Confirmatory %>%
   left_join(Titer, by = 'Sample_Number') 
