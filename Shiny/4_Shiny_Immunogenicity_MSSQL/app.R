@@ -23,44 +23,86 @@ ranges <- samples %>%
   ) %>%
   collect()
 
-ui <- dashboardPage(
-  dashboardHeader(title = "Quick Example"),
-  dashboardSidebar(
-    selectInput("blood", "Blood Type:",
-                blood,
-                multiple = TRUE,
-                size = 5,
-                selected = blood,
-                selectize = FALSE),
-    sliderInput("min_weight", 
-                "Minimum Weight:",
-                min = ranges$min_weight, 
-                max = ranges$max_weight, 
-                value = ranges$min_weight),
-    sliderInput("max_weight", 
-                "Maximum Weight:",
-                min = ranges$min_weight, 
-                max = ranges$max_weight, 
-                value = ranges$max_weight),
-    sliderInput("screening_cutoff", 
-                "Screening Cutoff:",
-                min = 0, 
-                max = ranges$max_sreening, 
-                value = 0),
-    sliderInput("confirmatory_cutoff", 
-                "Confirmatory Cutoff:",
-                min = 0, 
-                max = ranges$max_sreening, 
-                value = 0)
+ui <- function(request){
+  dashboardPage(
+    #skin = "yellow",
+    dashboardHeader(title = "Study Results",
+                    dropdownMenuOutput("studies")
     ),
-  dashboardBody(
-    valueBoxOutput("no_samples"),
-    valueBoxOutput("true_positives"),
-    plotOutput("hist_drug"),
-    plotOutput("hist_no_drug")
+    dashboardSidebar(
+      selectInput("blood", "Blood Type:",
+                  blood,
+                  multiple = TRUE,
+                  size = 5,
+                  selected = blood,
+                  selectize = FALSE),
+      sliderInput("min_weight", 
+                  "Minimum Weight:",
+                  min = ranges$min_weight, 
+                  max = ranges$max_weight, 
+                  value = ranges$min_weight),
+      sliderInput("max_weight", 
+                  "Maximum Weight:",
+                  min = ranges$min_weight, 
+                  max = ranges$max_weight, 
+                  value = ranges$max_weight),
+      sliderInput("screening_cutoff", 
+                  "Screening Cutoff:",
+                  min = 0, 
+                  max = ranges$max_sreening, 
+                  value = 0),
+      sliderInput("confirmatory_cutoff", 
+                  "Confirmatory Cutoff:",
+                  min = 0, 
+                  max = ranges$max_sreening, 
+                  value = 0),
+      bookmarkButton()
+    ),
+    dashboardBody(
+      fluidRow(
+        valueBoxOutput("no_samples"),
+        valueBoxOutput("true_positives"),
+        valueBoxOutput("avg_weight")
+      ),
+      fluidRow(
+        box(
+          plotOutput("hist_drug", 
+                     height = 250,
+                     click = "plot_click",
+                     dblclick = "plot_dblclick",
+                     hover = "plot_hover",
+                     brush = "plot_brush"),
+          title = "Signal Response Drug", 
+          width = 6, height = 320,
+          background = "light-blue"
+        ),
+        box(
+          plotOutput("hist_no_drug", height = 250),
+          title = "Signal Response No Drug", 
+          width = 6, height = 320,
+          collapsible = TRUE,
+          background = "green"
+        )
+      ),
+      fluidRow(
+        box(
+          plotOutput("hist_percent", height = 250),
+          title = "Percent Signal Inhibition Drug", 
+          width = 6, height = 320,
+          background = "light-blue"
+        ),
+        box(
+          plotOutput("hist_weight", height = 250),
+          title = "Weight", 
+          width = 6, height = 320,
+          background = "green"
+        )
+      )
+    )
   )
-)
-server <- function(input, output) {
+}
+
+server <- function(input, output, session) {
   
   sample_data <- reactive({
     samples %>%
@@ -82,21 +124,38 @@ server <- function(input, output) {
   output$hist_drug <- renderPlot({
     sample_data() %>%
       dbplot_histogram(Signal_Response_Drug) +
-      labs(title = "Signal Response Drug", x = "", y = "")
+      labs(title = "", x = "", y = "")
   })
   
   output$hist_no_drug <- renderPlot({
     sample_data() %>%
       dbplot_histogram(Signal_Response_No_Drug) +
-      labs(title = "Signal Response No Drug", x = "", y = "")
+      labs(title = "", x = "", y = "")
   })
+  
+# ----------------------------
+  
+  output$hist_percent <- renderPlot({
+    sample_data() %>%
+      dbplot_histogram(Percent_Signal_Inhibition_Drug) +
+      labs(title = "", x = "", y = "")
+  })
+  
+  output$hist_weight <- renderPlot({
+    sample_data() %>%
+      dbplot_histogram(Weight) +
+      labs(title = "", x = "", y = "")
+  })
+#---------------------------
+  
   
   output$no_samples <- renderValueBox({
    valueBox(
      sample_data() %>% 
        tally() %>% 
        pull(),
-     "No. of samples"
+     "No. of samples",
+     icon = icon("flask")
    )})
   
   output$true_positives <- renderValueBox({
@@ -105,9 +164,34 @@ server <- function(input, output) {
         filter(True_Positive == "Yes") %>%
         tally() %>% 
         pull(),
-      "True Positives"
+      "True Positives",
+      icon = icon("check"),
+      color = "green"
     )})
   
-  output$test <- renderText(length(input$blood))
+  output$avg_weight <- renderValueBox({
+    valueBox(
+      sample_data() %>% 
+        summarise(w = mean(Weight, na.rm = TRUE)) %>%
+        pull() %>%
+        round(., 0),
+      "Avg. Weight",
+      icon = icon("user"),
+      color = "yellow"
+    )})
+  
+  output$studies <- renderMenu({
+    msgs <- list(
+      notificationItem(text = "study_01", icon = icon("address-card"), href = ".?_inputs_&min_weight=152"),
+      notificationItem(text = "study_02", icon = icon("address-card"), href = ".?_inputs_&min_weight=0")
+      )
+    
+    dropdownMenu(
+      type = "notifications", 
+      headerText = "Completed Studies",
+      icon = icon("clipboard"),
+      #badgeStatus = NULL,
+      .list = msgs)
+  })
 }
-shinyApp(ui, server)
+shinyApp(ui, server, enableBookmarking = "url")
