@@ -6,34 +6,42 @@ library(odbc)
 library(DBI)
 library(dbplot)
 library(ggplot2)
-
+library(waffle)
+library(DT)
 
 load("samples.Rdata")
 
 # Database connection ----------------------
-# 
-# con <- dbConnect(odbc(), 
-#                  Driver = "SQL Server", 
-#                  Server = "localhost\\SQLEXPRESS", 
-#                  Database = "immunogenicity", 
+#
+# con <- dbConnect(odbc(),
+#                  Driver = "SQL Server",
+#                  Server = "localhost\\SQLEXPRESS",
+#                  Database = "immunogenicity",
 #                  Trusted_Connection = "True")
-# 
+#
 # screening <- tbl(con, in_schema("study_01", "screening"))
 # confirmatory <- tbl(con, in_schema("study_01", "confirmatory"))
 # titer <- tbl(con, in_schema("study_01", "titer")) %>%
 #   select(- Site, - Subject)
 # subjects <- tbl(con, in_schema("study_01", "subjects"))
-# 
+#
 # samples <- screening %>%
 #   left_join(confirmatory, by = "Sample_Number") %>%
 #   left_join(titer, by = "Sample_Number") %>%
 #   left_join(subjects, by = "Subject") %>%
 #   mutate_if(is.integer, as.numeric) %>%
-#   mutate(Signal_Response_Difference = Signal_Response_No_Drug - Signal_Response_Drug)  %>% 
+#   mutate(Signal_Response_Difference = Signal_Response_No_Drug - Signal_Response_Drug)  %>%
 #   mutate(Signal_Response_Divide = Signal_Response_Difference / Signal_Response_No_Drug)  %>%
-#   mutate(Percent_Signal_Inhibition_Drug = Signal_Response_Divide * 100) 
+#   mutate(Percent_Signal_Inhibition_Drug = Signal_Response_Divide * 100)
+
 
 # Data prep for Side Menu -------------------
+
+# schemata <- odbc:::connection_sql_tables(con@ptr, "", "%", "", "")[["table_schema"]]
+# schemata <- schemata[schemata != "INFORMATION_SCHEMA"]
+# schemata <- schemata[schemata != "sys"]
+
+schemata <- c("study_01")
 
 blood <- samples %>%
   group_by(Blood_Type) %>%
@@ -49,89 +57,121 @@ ranges <- samples %>%
   ) %>%
   collect()
 
-ui <- function(request){
+ui <- function(request) {
   dashboardPage(
     dashboardHeader(title = "Study Results"),
     dashboardSidebar(
+      selectInput("schema", "Select schema:",
+        schemata,
+        selected = 1
+      ),
+      checkboxInput("tp_only", "True Positives Only"),
       selectInput("blood", "Blood Type:",
-                  blood,
-                  multiple = TRUE,
-                  size = 5,
-                  selected = blood,
-                  selectize = FALSE),
-      sliderInput("min_weight", 
-                  "Minimum Weight:",
-                  min = ranges$min_weight, 
-                  max = ranges$max_weight, 
-                  value = ranges$min_weight),
-      sliderInput("max_weight", 
-                  "Maximum Weight:",
-                  min = ranges$min_weight, 
-                  max = ranges$max_weight, 
-                  value = ranges$max_weight),
-      sliderInput("screening_cutoff", 
-                  "Screening Cutoff:",
-                  min = 0, 
-                  max = ranges$max_sreening, 
-                  value = 0),
-      sliderInput("confirmatory_cutoff", 
-                  "Confirmatory Cutoff:",
-                  min = 0, 
-                  max = ranges$max_sreening, 
-                  value = 0),
+        blood,
+        multiple = TRUE,
+        size = 5,
+        selected = blood,
+        selectize = FALSE
+      ),
+      sliderInput("min_weight",
+        "Minimum Weight:",
+        min = ranges$min_weight,
+        max = ranges$max_weight,
+        value = ranges$min_weight
+      ),
+      sliderInput("max_weight",
+        "Maximum Weight:",
+        min = ranges$min_weight,
+        max = ranges$max_weight,
+        value = ranges$max_weight
+      ),
+      sliderInput("screening_cutoff",
+        "Screening Cutoff:",
+        min = 0,
+        max = ranges$max_sreening,
+        value = 0
+      ),
+      sliderInput("confirmatory_cutoff",
+        "Confirmatory Cutoff:",
+        min = 0,
+        max = ranges$max_sreening,
+        value = 0
+      ),
       bookmarkButton()
     ),
     dashboardBody(
-      fluidRow(
-        valueBoxOutput("no_samples", width = 3),
-        valueBoxOutput("true_positives", width = 3),
-        valueBoxOutput("avg_weight", width = 3),
-        valueBoxOutput("avg_percent", width = 3)
-      ),
-      fluidRow(
-        box(
-          plotOutput("hist_drug", 
-                     height = 250,
-                     click = "plot_click",
-                     dblclick = "plot_dblclick",
-                     hover = "plot_hover",
-                     brush = "plot_brush"),
-          title = "Signal Response Drug", 
-          width = 4, height = 320,
-          background = "light-blue"
+      tabsetPanel(
+        id = "tabs",
+        tabPanel(
+          title = "Study Results",
+          value = "page1",
+          fluidRow(
+            valueBoxOutput("no_samples", width = 3),
+            valueBoxOutput("true_positives", width = 3),
+            valueBoxOutput("avg_weight", width = 3),
+            valueBoxOutput("avg_percent", width = 3)
+          ),
+          fluidRow(
+            box(
+              plotOutput("hist_drug",
+                height = 250,
+                click = "plot_click",
+                dblclick = "plot_dblclick",
+                hover = "plot_hover",
+                brush = "plot_brush"
+              ),
+              title = "Signal Response Drug",
+              width = 4, height = 320,
+              background = "light-blue"
+            ),
+            box(
+              plotOutput("hist_no_drug", height = 250),
+              title = "Signal Response No Drug",
+              width = 4, height = 320,
+              background = "light-blue"
+            ),
+            box(
+              plotOutput("hist_percent", height = 250),
+              title = "Percent Signal Inhibition Drug",
+              width = 4, height = 320,
+              background = "teal"
+            )
+          ),
+          fluidRow(
+            box(
+              plotOutput(
+                "by_blood",
+                height = 250,
+                click = "blood_click"
+              ),
+              title = "Samples by Blood Type",
+              width = 3, height = 320,
+              background = "blue"
+            ),
+            box(
+              plotOutput("hist_weight", height = 250),
+              title = "Subject's Weight",
+              width = 3, height = 320,
+              background = "purple"
+            ),
+            box(
+              plotOutput("tp_waffle", height = 250),
+              title = "Cut off results",
+              width = 6, height = 320,
+              background = "green"
+            )
+          )
         ),
-        box(
-          plotOutput("hist_no_drug", height = 250),
-          title = "Signal Response No Drug", 
-          width = 4, height = 320,
-          collapsible = TRUE,
-          background = "light-blue"
-        ),
-        box(
-          plotOutput("hist_percent", height = 250),
-          title = "Percent Signal Inhibition Drug", 
-          width = 4, height = 320,
-          background = "teal"
-        )
-      ),
-      fluidRow(
-        box(
-          plotOutput("by_blood", height = 250),
-          title = "Samples by Blood Type", 
-          width = 3, height = 320,
-          background = "blue"
-        ),
-        box(
-          plotOutput("hist_weight", height = 250),
-          title = "Subject's Weight", 
-          width = 3, height = 320,
-          background = "purple"
-        ),
-        box(
-          plotOutput("tp_waffle", height = 250),
-          title = "Cut off results", 
-          width = 6, height = 320,
-          background = "green"
+        tabPanel(
+          title = "Details",
+          value = "page2",
+          fluidRow(
+            box(
+              title = "Detail - Top 10 Records",
+              width = 12,
+              dataTableOutput("details")
+            )
+          )
         )
       )
     )
@@ -139,14 +179,14 @@ ui <- function(request){
 }
 
 server <- function(input, output, session) {
-  
-  # Reactive master query prep ------------
+  # Reactive master query prep ---------------------------
   sample_data <- reactive({
-    samples %>%
+    df <- samples %>%
       filter(
         Blood_Type %in% input$blood,
         Weight >= input$min_weight,
-        Weight <= input$max_weight) %>%
+        Weight <= input$max_weight
+      ) %>%
       mutate(
         Response_Drug = ifelse(Signal_Response_Drug >= input$screening_cutoff, "Positive", "Negative"),
         Response_No_Drug = ifelse(Signal_Response_No_Drug >= input$confirmatory_cutoff, "Positive", "Negative")
@@ -154,58 +194,59 @@ server <- function(input, output, session) {
       mutate(
         True_Positive = ifelse(Response_Drug == Response_No_Drug, "Yes", "No")
       )
-      
-       
+    if (input$tp_only == 1) df <- filter(df, True_Positive == "Yes")
+    df
   })
-  
-
-  # Render - No of samples value box ------------
+  # Render - No of samples value box ----------------------
   output$no_samples <- renderValueBox({
     valueBox(
-      sample_data() %>% 
-        tally() %>% 
+      sample_data() %>%
+        tally() %>%
         pull(),
       "No. of samples",
       icon = icon("flask")
-    )})
-  
-  # Render - True positives value box ------------
+    )
+  })
+
+  # Render - True positives value box ---------------------
   output$true_positives <- renderValueBox({
     valueBox(
-      sample_data() %>% 
+      sample_data() %>%
         filter(True_Positive == "Yes") %>%
-        tally() %>% 
+        tally() %>%
         pull(),
       "True Positives",
       icon = icon("check"),
       color = "green"
-    )})
-  
-  # Render - Avg Weight value box ------------
+    )
+  })
+
+  # Render - Avg Weight value box -------------------------
   output$avg_weight <- renderValueBox({
     valueBox(
-      sample_data() %>% 
+      sample_data() %>%
         summarise(w = mean(Weight, na.rm = TRUE)) %>%
         pull() %>%
         round(., 0),
       "Avg. Weight",
       icon = icon("user"),
       color = "purple"
-    )})
-  
-  # Render - Avg percent value box ------------
+    )
+  })
+
+  # Render - Avg percent value box ------------------------
   output$avg_percent <- renderValueBox({
     valueBox(
-      sample_data() %>% 
+      sample_data() %>%
         summarise(per = mean(Percent_Signal_Inhibition_Drug, na.rm = TRUE)) %>%
         pull() %>%
         round(., 2),
       "Avg. Signal Percent",
       icon = icon("percent"),
       color = "teal"
-    )})
-  
-  # Render - Drug histogram ----------------
+    )
+  })
+  # Render - Drug histogram -------------------------------
   output$hist_drug <- renderPlot({
     sample_data() %>%
       dbplot_histogram(Signal_Response_Drug) +
@@ -215,29 +256,27 @@ server <- function(input, output, session) {
         title = element_blank()
       )
   })
-  # Render - No Drug histogram ----------------
+  # Render - No Drug histogram ----------------------------
   output$hist_no_drug <- renderPlot({
     sample_data() %>%
-      dbplot_histogram(Signal_Response_No_Drug)  +
+      dbplot_histogram(Signal_Response_No_Drug) +
       theme(
         axis.title.y = element_blank(),
         axis.title.x = element_blank(),
         title = element_blank()
       )
   })
-  
-  # Render - Percent histogram ----------------
+  # Render - Percent histogram ----------------------------
   output$hist_percent <- renderPlot({
     sample_data() %>%
-      dbplot_histogram(Percent_Signal_Inhibition_Drug)  +
+      dbplot_histogram(Percent_Signal_Inhibition_Drug) +
       theme(
         axis.title.y = element_blank(),
         axis.title.x = element_blank(),
         title = element_blank()
       )
   })
-  
-  # Render - Blood column plot ----------------
+  # Render - Blood column plot ----------------------------
   output$by_blood <- renderPlot({
     sample_data() %>%
       db_compute_count(Blood_Type) %>%
@@ -256,8 +295,7 @@ server <- function(input, output, session) {
         legend.position = "none"
       )
   })
-  
-  # Render - Weight histogram ----------------
+  # Render - Weight histogram -----------------------------
   output$hist_weight <- renderPlot({
     sample_data() %>%
       dbplot_histogram(Weight) +
@@ -267,43 +305,51 @@ server <- function(input, output, session) {
         title = element_blank()
       )
   })
-  
-  # Render - True positives waffle plot ----------------
+  # Render - True positives waffle plot -------------------
   output$tp_waffle <- renderPlot({
-    tp <- sample_data() %>% 
+    tp <- sample_data() %>%
       group_by(True_Positive) %>%
       tally() %>%
-      collect() 
-    
+      collect()
     parts <- c(
       "False Positive" = pull(filter(tp, True_Positive == "No")),
       "True Positive" = pull(filter(tp, True_Positive == "Yes"))
-      
     )
-    
-    waffle_colors <- c("#969696", "#1879bf",  "white")
-    if(length(parts) == 1 ) waffle_colors <- "#1879bf"
-    
-    waffle(parts, rows = 5,
-           colors = waffle_colors , legend_pos = "bottom"
+    waffle_colors <- c("#969696", "#1879bf", "white")
+    if (length(parts) == 1) waffle_colors <- "#1879bf"
+    waffle(parts,
+      rows = 5,
+      colors = waffle_colors,
+      legend_pos = "bottom"
     )
   })
-  
-  
+  # Details table -----------------------------------------
+  output$details <- renderDataTable(
+    sample_data() %>%
+      select(
+        Sample_Number,
+        Site,
+        Subject,
+        Signal_Response_Drug,
+        Signal_Response_No_Drug,
+        Blood_Type,
+        Weight,
+        Percent_Signal_Inhibition_Drug,
+        True_Positive
+      ) %>%
+      head(10) %>%
+      collect()
+  )
+  # Click-event blood -------------------------------------
+  observeEvent(input$blood_click, {
+    vals <- round(input$blood_click$y, 0)
+    vals <- blood[vals]
 
-  
-  output$studies <- renderMenu({
-    msgs <- list(
-      notificationItem(text = "study_01", icon = icon("address-card"), href = ".?_inputs_&min_weight=152"),
-      notificationItem(text = "study_02", icon = icon("address-card"), href = ".?_inputs_&min_weight=0")
-      )
-    
-    dropdownMenu(
-      type = "notifications", 
-      headerText = "Completed Studies",
-      icon = icon("clipboard"),
-      #badgeStatus = NULL,
-      .list = msgs)
+    updateSelectInput(session, "blood",
+      selected = vals
+    )
+
+    updateTabsetPanel(session, "tabs", selected = "page2")
   })
 }
 
