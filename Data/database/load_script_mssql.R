@@ -6,13 +6,11 @@ library(readr)
 library(dplyr)
 library(odbc)
 
-mssql_server_name <- "localhost\\SQLEXPRESS" # Replace with actual DB location
+mssql_server_name <- "SQL Server (DSN)" # Replace with actual DB location
 
 con <- dbConnect(odbc(), 
-                 Driver = "SQL Server", 
-                 Server = mssql_server_name, 
-                 Database = "master",              
-                 Trusted_Connection = "True")
+                 mssql_server_name,
+                 Database = "master")
 
 
 
@@ -20,10 +18,8 @@ dbSendQuery(con, "CREATE DATABASE immunogenicity")
 dbDisconnect(con)
 
 con <- dbConnect(odbc(), 
-                 Driver = "SQL Server", 
-                 Server = mssql_server_name, 
-                 Database = "immunogenicity", 
-                 Trusted_Connection = "True")
+                 mssql_server_name,
+                 Database = "immunogenicity")
 
 add_schema <- function(schema_name, seed_value){
   dbSendQuery(con, paste0("CREATE SCHEMA ", schema_name))
@@ -63,10 +59,8 @@ rm(confirmatory, titer, screening, con, db_location, mssql_server_name)
 # Run if the database needs to be deleted
 delete_database <- function(){
   con <- dbConnect(odbc(), 
-                   Driver = "SQL Server", 
-                   Server = mssql_server_name, 
-                   Database = "master",              
-                   Trusted_Connection = "True")
+                   mssql_server_name,
+                   Database = "master")
   dbSendQuery(con, "DROP DATABASE immunogenicity") 
   dbDisconnect(con)
 }

@@ -12,27 +12,24 @@ library(DT)
 load("samples.Rdata")
 
 # Database connection ----------------------
-#
-# con <- dbConnect(odbc(),
-#                  Driver = "SQL Server",
-#                  Server = "localhost\\SQLEXPRESS",
-#                  Database = "immunogenicity",
-#                  Trusted_Connection = "True")
-#
-# screening <- tbl(con, in_schema("study_01", "screening"))
-# confirmatory <- tbl(con, in_schema("study_01", "confirmatory"))
-# titer <- tbl(con, in_schema("study_01", "titer")) %>%
-#   select(- Site, - Subject)
-# subjects <- tbl(con, in_schema("study_01", "subjects"))
-#
-# samples <- screening %>%
-#   left_join(confirmatory, by = "Sample_Number") %>%
-#   left_join(titer, by = "Sample_Number") %>%
-#   left_join(subjects, by = "Subject") %>%
-#   mutate_if(is.integer, as.numeric) %>%
-#   mutate(Signal_Response_Difference = Signal_Response_No_Drug - Signal_Response_Drug)  %>%
-#   mutate(Signal_Response_Divide = Signal_Response_Difference / Signal_Response_No_Drug)  %>%
-#   mutate(Percent_Signal_Inhibition_Drug = Signal_Response_Divide * 100)
+con <- dbConnect(odbc(), 
+                 "SQL Server (DSN)",
+                 Database = "immunogenicity")
+
+screening <- tbl(con, in_schema("study_01", "screening"))
+confirmatory <- tbl(con, in_schema("study_01", "confirmatory"))
+titer <- tbl(con, in_schema("study_01", "titer")) %>%
+  select(- Site, - Subject)
+subjects <- tbl(con, in_schema("study_01", "subjects"))
+
+samples <- screening %>%
+  left_join(confirmatory, by = "Sample_Number") %>%
+  left_join(titer, by = "Sample_Number") %>%
+  left_join(subjects, by = "Subject") %>%
+  mutate_if(is.integer, as.numeric) %>%
+  mutate(Signal_Response_Difference = Signal_Response_No_Drug - Signal_Response_Drug)  %>%
+  mutate(Signal_Response_Divide = Signal_Response_Difference / Signal_Response_No_Drug)  %>%
+  mutate(Percent_Signal_Inhibition_Drug = Signal_Response_Divide * 100)
 
 
 # Data prep for Side Menu -------------------
